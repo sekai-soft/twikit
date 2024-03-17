@@ -1415,7 +1415,8 @@ class Client:
         self,
         count: int = 20,
         seen_tweet_ids: list[str] | None = None,
-        cursor: str | None = None
+        cursor: str | None = None,
+        timeline_endpoint: str = Endpoint.HOME_TIMELINE,
     ) -> Result[Tweet]:
         """
         Retrieves the timeline.
@@ -1464,11 +1465,11 @@ class Client:
 
         data = {
             'variables': variables,
-            'queryId': get_query_id(Endpoint.HOME_TIMELINE),
+            'queryId': get_query_id(timeline_endpoint),
             'features': FEATURES,
         }
         response = self.http.post(
-            Endpoint.HOME_TIMELINE,
+            timeline_endpoint,
             data=json.dumps(data),
             headers=self._base_headers
         ).json()

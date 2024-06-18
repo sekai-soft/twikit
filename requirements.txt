@@ -1,2 +1,4 @@
 httpx
-fake_useragent
+filetype
+beautifulsoup4
+pyotp

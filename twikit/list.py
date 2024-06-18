@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Literal
+
+from .utils import timestamp_to_datetime
 
 if TYPE_CHECKING:
     from httpx import Response
@@ -17,32 +20,32 @@ class List:
 
     Attributes
     ----------
-    id : str
+    id : :class:`str`
         The unique identifier of the List.
-    created_at : int
+    created_at : :class:`int`
         The timestamp when the List was created.
-    default_banner : dict
+    default_banner : :class:`dict`
         Information about the default banner of the List.
-    banner : dict
+    banner : :class:`dict`
         Information about the banner of the List. If custom banner is not set,
         it defaults to the default banner.
-    description : str
+    description : :class:`str`
         The description of the List.
-    following : bool
+    following : :class:`bool`
         Indicates if the authenticated user is following the List.
-    is_member : bool
+    is_member : :class:`bool`
         Indicates if the authenticated user is a member of the List.
-    member_count : int
+    member_count : :class:`int`
         The number of members in the List.
-    mode : Literal['Private', 'Public']
+    mode : {'Private', 'Public'}
         The mode of the List, either 'Private' or 'Public'.
-    muting : bool
+    muting : :class:`bool`
         Indicates if the authenticated user is muting the List.
-    name : str
+    name : :class:`str`
         The name of the List.
-    pinning : bool
+    pinning : :class:`bool`
         Indicates if the List is pinned.
-    subscriber_count : int
+    subscriber_count : :class:`int`
         The number of subscribers to the List.
     """
     def __init__(self, client: Client, data: dict) -> None:
@@ -67,23 +70,27 @@ class List:
         self.pinning: bool = data['pinning']
         self.subscriber_count: int = data['subscriber_count']
 
+    @property
+    def created_at_datetime(self) -> datetime:
+        return timestamp_to_datetime(self.created_at)
+
     def edit_banner(self, media_id: str) -> Response:
         """
         Edit the banner image of the list.
 
         Parameters
         ----------
-        media_id : str
+        media_id : :class:`str`
             The ID of the media to use as the new banner image.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         Examples
         --------
-        >>> media_id = client.upload_media('image.png', 0)
+        >>> media_id = client.upload_media('image.png')
         >>> media.edit_banner(media_id)
         """
         return self._client.edit_list_banner(self.id, media_id)
@@ -105,17 +112,17 @@ class List:
 
         Parameters
         ----------
-        name : str, default=None
+        name : :class:`str`, default=None
             The new name for the list.
-        description : str, default=None
+        description : :class:`str`, default=None
             The new description for the list.
-        is_private : bool, default=None
+        is_private : :class:`bool`, default=None
             Indicates whether the list should be private
             (True) or public (False).
 
         Returns
         -------
-        List
+        :class:`List`
             The updated Twitter list.
 
         Examples
@@ -146,14 +153,14 @@ class List:
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             The number of tweets to retrieve.
-        cursor : str, default=None
+        cursor : :class:`str`, default=None
             The cursor for pagination.
 
         Returns
         -------
-        Result[Tweet]
+        Result[:class:`Tweet`]
             A Result object containing the retrieved tweets.
 
         Examples
@@ -183,12 +190,12 @@ class List:
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             Number of members to retrieve.
 
         Returns
         -------
-        Result[User]
+        Result[:class:`User`]
             Members of the list
 
         Examples
@@ -211,12 +218,12 @@ class List:
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             Number of subscribers to retrieve.
 
         Returns
         -------
-        Result[User]
+        Result[:class:`User`]
             Subscribers of the list
 
         Examples
@@ -231,6 +238,10 @@ class List:
         >>> more_subscribers = subscribers.next()  # Retrieve more subscribers
         """
         return self._client.get_list_subscribers(self.id, count, cursor)
+
+    def update(self) -> None:
+        new = self._client.get_list(self.id)
+        self.__dict__.update(new.__dict__)
 
     def __eq__(self, __value: object) -> bool:
         return isinstance(__value, List) and self.id == __value.id

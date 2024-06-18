@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .message import Message
+from .user import User
+from .utils import build_user_data
 
 if TYPE_CHECKING:
     from httpx import Response
@@ -17,11 +19,11 @@ class Group:
 
     Attributes
     ----------
-    id : str
+    id : :class:`str`
         The ID of the group.
-    name : str | None
+    name : :class:`str` | None
         The name of the group.
-    members : list[str]
+    members : list[:class:`str`]
         Member IDs
     """
     def __init__(self, client: Client, group_id: str, data: dict) -> None:
@@ -39,7 +41,9 @@ class Group:
         )
 
         members = data['conversation_timeline']['users'].values()
-        self.members: list[str] = [i['id_str'] for i in members]
+        self.members: list[User] = [
+            User(client, build_user_data(i)) for i in members
+        ]
 
     def get_history(self, max_id: str | None = None) -> Result[GroupMessage]:
         """
@@ -47,12 +51,12 @@ class Group:
 
         Parameters
         ----------
-        max_id : str, default=None
+        max_id : :class:`str`, default=None
             If specified, retrieves messages older than the specified max_id.
 
         Returns
         -------
-        Result[GroupMessage]
+        Result[:class:`GroupMessage`]
             A Result object containing a list of GroupMessage objects
             representing the DM conversation history.
 
@@ -81,12 +85,12 @@ class Group:
 
         Parameters
         ----------
-        user_ids : list[str]
+        user_ids : list[:class:`str`]
             List of IDs of users to be added.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         Examples
@@ -101,12 +105,12 @@ class Group:
 
         Parameters
         ----------
-        name : str
+        name : :class:`str`
             New name.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
         """
         return self._client.change_group_name(self.id, name)
@@ -122,30 +126,34 @@ class Group:
 
         Parameters
         ----------
-        text : str
+        text : :class:`str`
             The text content of the direct message.
-        media_id : str, default=None
+        media_id : :class:`str`, default=None
             The media ID associated with any media content
             to be included in the message.
             Media ID can be received by using the :func:`.upload_media` method.
-        reply_to : str, default=None
+        reply_to : :class:`str`, default=None
             Message ID to reply to.
 
         Returns
         -------
-        GroupMessage
+        :class:`GroupMessage`
             `Message` object containing information about the message sent.
 
         Examples
         --------
         >>> # send DM with media
         >>> group_id = '000000000'
-        >>> media_id = client.upload_media('image.png', 0)
+        >>> media_id = client.upload_media('image.png')
         >>> message = group.send_message('text', media_id)
         >>> print(message)
         <GroupMessage id='...'>
         """
         return self._client.send_dm_to_group(self.id, text, media_id, reply_to)
+
+    def update(self) -> None:
+        new = self._client.get_group(self.id)
+        self.__dict__.update(new.__dict__)
 
     def __repr__(self) -> str:
         return f'<Group id="{self.id}">'
@@ -157,15 +165,15 @@ class GroupMessage(Message):
 
     Attributes
     ----------
-    id : str
+    id : :class:`str`
         The ID of the message.
-    time : str
+    time : :class:`str`
         The timestamp of the message.
-    text : str
+    text : :class:`str`
         The text content of the message.
-    attachment : str
+    attachment : :class:`str`
         The media URL associated with any attachment in the message.
-    group_id : str
+    group_id : :class:`str`
         The ID of the group.
     """
     def __init__(
@@ -189,16 +197,16 @@ class GroupMessage(Message):
 
         Parameters
         ----------
-        text : str
+        text : :class:`str`
             The text content of the direct message.
-        media_id : str, default=None
+        media_id : :class:`str`, default=None
             The media ID associated with any media content
             to be included in the message.
             Media ID can be received by using the :func:`.upload_media` method.
 
         Returns
         -------
-        Message
+        :class:`Message`
             `GroupMessage` object containing information about
             the message sent.
 
@@ -216,12 +224,12 @@ class GroupMessage(Message):
 
         Parameters
         ----------
-        emoji : str
+        emoji : :class:`str`
             The emoji to be added as a reaction.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
         """
         return self._client.add_reaction_to_message(
@@ -234,7 +242,7 @@ class GroupMessage(Message):
 
         Parameters
         ----------
-        emoji : str
+        emoji : :class:`str`
             The emoji to be removed.
 
         Returns

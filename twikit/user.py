@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Literal
+
+from .utils import timestamp_to_datetime
 
 if TYPE_CHECKING:
     from httpx import Response
@@ -15,71 +18,71 @@ class User:
     """
     Attributes
     ----------
-    id : str
+    id : :class:`str`
         The unique identifier of the user.
-    created_at : str
+    created_at : :class:`str`
         The date and time when the user account was created.
-    name : str
+    name : :class:`str`
         The user's name.
-    screen_name : str
+    screen_name : :class:`str`
         The user's screen name.
-    profile_image_url : str
+    profile_image_url : :class:`str`
         The URL of the user's profile image (HTTPS version).
-    profile_banner_url : str
+    profile_banner_url : :class:`str`
         The URL of the user's profile banner.
-    url : str
+    url : :class:`str`
         The user's URL.
-    location : str
+    location : :class:`str`
         The user's location information.
-    description : str
+    description : :class:`str`
         The user's profile description.
-    description_urls : list
+    description_urls : :class:`list`
         URLs found in the user's profile description.
-    urls : list
+    urls : :class:`list`
         URLs associated with the user.
-    pinned_tweet_ids : str
+    pinned_tweet_ids : :class:`str`
         The IDs of tweets that the user has pinned to their profile.
-    is_blue_verified : bool
+    is_blue_verified : :class:`bool`
         Indicates if the user is verified with a blue checkmark.
-    verified : bool
+    verified : :class:`bool`
         Indicates if the user is verified.
-    possibly_sensitive : bool
+    possibly_sensitive : :class:`bool`
         Indicates if the user's content may be sensitive.
-    can_dm : bool
+    can_dm : :class:`bool`
         Indicates whether the user can receive direct messages.
-    can_media_tag : bool
+    can_media_tag : :class:`bool`
         Indicates whether the user can be tagged in media.
-    want_retweets : bool
+    want_retweets : :class:`bool`
         Indicates if the user wants retweets.
-    default_profile : bool
+    default_profile : :class:`bool`
         Indicates if the user has the default profile.
-    default_profile_image : bool
+    default_profile_image : :class:`bool`
         Indicates if the user has the default profile image.
-    has_custom_timelines : bool
+    has_custom_timelines : :class:`bool`
         Indicates if the user has custom timelines.
-    followers_count : int
+    followers_count : :class:`int`
         The count of followers.
-    fast_followers_count : int
+    fast_followers_count : :class:`int`
         The count of fast followers.
-    normal_followers_count : int
+    normal_followers_count : :class:`int`
         The count of normal followers.
-    following_count : int
+    following_count : :class:`int`
         The count of users the user is following.
-    favourites_count : int
+    favourites_count : :class:`int`
         The count of favorites or likes.
-    listed_count : int
+    listed_count : :class:`int`
         The count of lists the user is a member of.
-    media_count : int
+    media_count : :class:`int`
         The count of media items associated with the user.
-    statuses_count : int
+    statuses_count : :class:`int`
         The count of tweets.
-    is_translator : bool
+    is_translator : :class:`bool`
         Indicates if the user is a translator.
-    translator_type : str
+    translator_type : :class:`str`
         The type of translator.
-    profile_interstitial_type : str
+    profile_interstitial_type : :class:`str`
         The type of profile interstitial.
-    withheld_in_countries : list[str]
+    withheld_in_countries : list[:class:`str`]
         Countries where the user's content is withheld.
     """
 
@@ -119,6 +122,11 @@ class User:
         self.is_translator: bool = legacy['is_translator']
         self.translator_type: str = legacy['translator_type']
         self.withheld_in_countries: list[str] = legacy['withheld_in_countries']
+        self.protected: bool = legacy.get('protected', False)
+
+    @property
+    def created_at_datetime(self) -> datetime:
+        return timestamp_to_datetime(self.created_at)
 
     def get_tweets(
         self,
@@ -132,12 +140,12 @@ class User:
         ----------
         tweet_type : {'Tweets', 'Replies', 'Media', 'Likes'}
             The type of tweets to retrieve.
-        count : int, default=40
+        count : :class:`int`, default=40
             The number of tweets to retrieve.
 
         Returns
         -------
-        Result[Tweet]
+        Result[:class:`Tweet`]
             A Result object containing a list of `Tweet` objects.
 
         Examples
@@ -161,13 +169,16 @@ class User:
         """
         return self._client.get_user_tweets(self.id, tweet_type, count)
 
+    def get_likes(self, count: int = 40, cursor: str | None = None) -> Result[Tweet]:
+        return self._client.get_user_likes(self.id, count=count, cursor=cursor)
+
     def follow(self) -> Response:
         """
         Follows the user.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         See Also
@@ -182,7 +193,7 @@ class User:
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         See Also
@@ -197,12 +208,12 @@ class User:
 
         Parameters
         ----------
-        user_id : str
+        user_id : :class:`str`
             The ID of the user to block.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         See Also
@@ -217,12 +228,12 @@ class User:
 
         Parameters
         ----------
-        user_id : str
+        user_id : :class:`str`
             The ID of the user to unblock.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         See Also
@@ -237,12 +248,12 @@ class User:
 
         Parameters
         ----------
-        user_id : str
+        user_id : :class:`str`
             The ID of the user to mute.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         See Also
@@ -257,12 +268,12 @@ class User:
 
         Parameters
         ----------
-        user_id : str
+        user_id : :class:`str`
             The ID of the user to unmute.
 
         Returns
         -------
-        httpx.Response
+        :class:`httpx.Response`
             Response returned from twitter api.
 
         See Also
@@ -271,18 +282,18 @@ class User:
         """
         return self._client.unmute_user(self.id)
 
-    def get_followers(self, count: int = 20) -> list[User]:
+    def get_followers(self, count: int = 20) -> Result[User]:
         """
         Retrieves a list of followers for the user.
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             The number of followers to retrieve.
 
         Returns
         -------
-        list[User]
+        Result[:class:`User`]
             A list of User objects representing the followers.
 
         See Also
@@ -291,18 +302,18 @@ class User:
         """
         return self._client.get_user_followers(self.id, count)
 
-    def get_verified_followers(self, count: int = 20) -> list[User]:
+    def get_verified_followers(self, count: int = 20) -> Result[User]:
         """
         Retrieves a list of verified followers for the user.
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             The number of verified followers to retrieve.
 
         Returns
         -------
-        list[User]
+        Result[:class:`User`]
             A list of User objects representing the verified followers.
 
         See Also
@@ -311,18 +322,18 @@ class User:
         """
         return self._client.get_user_verified_followers(self.id, count)
 
-    def get_followers_you_know(self, count: int = 20) -> list[User]:
+    def get_followers_you_know(self, count: int = 20) -> Result[User]:
         """
         Retrieves a list of followers whom the user might know.
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             The number of followers you might know to retrieve.
 
         Returns
         -------
-        list[User]
+        Result[:class:`User`]
             A list of User objects representing the followers you might know.
 
         See Also
@@ -331,18 +342,18 @@ class User:
         """
         return self._client.get_user_followers_you_know(self.id, count)
 
-    def get_following(self, count: int = 20) -> list[User]:
+    def get_following(self, count: int = 20) -> Result[User]:
         """
         Retrieves a list of users whom the user is following.
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             The number of following users to retrieve.
 
         Returns
         -------
-        list[User]
+        Result[:class:`User`]
             A list of User objects representing the users being followed.
 
         See Also
@@ -351,18 +362,18 @@ class User:
         """
         return self._client.get_user_following(self.id, count)
 
-    def get_subscriptions(self, count: int = 20) -> list[User]:
+    def get_subscriptions(self, count: int = 20) -> Result[User]:
         """
         Retrieves a list of users whom the user is subscribed to.
 
         Parameters
         ----------
-        count : int, default=20
+        count : :class:`int`, default=20
             The number of subscriptions to retrieve.
 
         Returns
         -------
-        list[User]
+        Result[:class:`User`]
             A list of User objects representing the subscribed users.
 
         See Also
@@ -370,6 +381,28 @@ class User:
         Client.get_user_subscriptions
         """
         return self._client.get_user_subscriptions(self.id, count)
+
+    def get_latest_followers(
+        self, count: int | None = None, cursor: str | None = None
+    ) -> Result[User]:
+        """
+        Retrieves the latest followers.
+        Max count : 200
+        """
+        return self._client.get_latest_followers(
+            self.id, count=count, cursor=cursor
+        )
+
+    def get_latest_friends(
+        self, count: int | None = None, cursor: str | None = None
+    ) -> Result[User]:
+        """
+        Retrieves the latest friends (following users).
+        Max count : 200
+        """
+        return self._client.get_latest_friends(
+            self.id, count=count, cursor=cursor
+        )
 
     def send_dm(
         self, text: str, media_id: str = None, reply_to = None
@@ -379,24 +412,24 @@ class User:
 
         Parameters
         ----------
-        text : str
+        text : :class:`str`
             The text content of the direct message.
-        media_id : str, default=None
+        media_id : :class:`str`, default=None
             The media ID associated with any media content
             to be included in the message.
             Media ID can be received by using the :func:`.upload_media` method.
-        reply_to : str, default=None
+        reply_to : :class:`str`, default=None
             Message ID to reply to.
 
         Returns
         -------
-        Message
+        :class:`Message`
             `Message` object containing information about the message sent.
 
         Examples
         --------
         >>> # send DM with media
-        >>> media_id = client.upload_media('image.png', 0)
+        >>> media_id = client.upload_media('image.png')
         >>> message = user.send_dm('text', media_id)
         >>> print(message)
         <Message id='...'>
@@ -414,12 +447,12 @@ class User:
 
         Parameters
         ----------
-        max_id : str, default=None
+        max_id : :class:`str`, default=None
             If specified, retrieves messages older than the specified max_id.
 
         Returns
         -------
-        Result[Message]
+        Result[:class:`Message`]
             A Result object containing a list of Message objects representing
             the DM conversation history.
 
@@ -442,6 +475,10 @@ class User:
         ...
         """
         return self._client.get_dm_history(self.id, max_id)
+
+    def update(self) -> None:
+        new = self._client.get_user_by_id(self.id)
+        self.__dict__.update(new.__dict__)
 
     def __repr__(self) -> str:
         return f'<User id="{self.id}">'

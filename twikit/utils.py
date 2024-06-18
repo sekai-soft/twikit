@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import base64
+import json
+from datetime import datetime
 from typing import (
     Any,
+    TYPE_CHECKING,
     Callable,
     Generic,
     Iterator,
@@ -11,8 +15,12 @@ from typing import (
 )
 from urllib import parse
 
+if TYPE_CHECKING:
+    from .client import Client
+
 # This token is common to all accounts and does not need to be changed.
 TOKEN = 'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA'
+TOKEN2 = 'AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF'
 
 FEATURES = {
     'creator_subscriptions_tweet_preview_api_enabled': True,
@@ -59,18 +67,146 @@ LIST_FEATURES = {
     'responsive_web_graphql_timeline_navigation_enabled': True
 }
 
+COMMUNITY_NOTE_FEATURES = {
+    'responsive_web_birdwatch_media_notes_enabled': True,
+    'responsive_web_graphql_timeline_navigation_enabled': True,
+    'rweb_tipjar_consumption_enabled': False,
+    'responsive_web_graphql_exclude_directive_enabled': True,
+    'verified_phone_label_enabled': False,
+    'responsive_web_graphql_skip_user_profile_image_extensions_enabled': False
+}
+
+COMMUNITY_TWEETS_FEATURES = {
+    'rweb_tipjar_consumption_enabled': True,
+    'responsive_web_graphql_exclude_directive_enabled': True,
+    'verified_phone_label_enabled': False,
+    'creator_subscriptions_tweet_preview_api_enabled': True,
+    'responsive_web_graphql_timeline_navigation_enabled': True,
+    'responsive_web_graphql_skip_user_profile_image_extensions_enabled': False,
+    'communities_web_enable_tweet_community_results_fetch': True,
+    'c9s_tweet_anatomy_moderator_badge_enabled': True,
+    'tweetypie_unmention_optimization_enabled': True,
+    'responsive_web_edit_tweet_api_enabled': True,
+    'graphql_is_translatable_rweb_tweet_is_translatable_enabled': True,
+    'view_counts_everywhere_api_enabled': True,
+    'longform_notetweets_consumption_enabled': True,
+    'responsive_web_twitter_article_tweet_consumption_enabled': True,
+    'tweet_awards_web_tipping_enabled': False,
+    'creator_subscriptions_quote_tweet_preview_enabled': False,
+    'freedom_of_speech_not_reach_fetch_enabled': True,
+    'standardized_nudges_misinfo': True,
+    'tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled': True,
+    'rweb_video_timestamps_enabled': True,
+    'longform_notetweets_rich_text_read_enabled': True,
+    'longform_notetweets_inline_media_enabled': True,
+    'responsive_web_enhance_cards_enabled': False
+}
+
+JOIN_COMMUNITY_FEATURES = {
+    'rweb_tipjar_consumption_enabled': True,
+    'responsive_web_graphql_exclude_directive_enabled': True,
+    'verified_phone_label_enabled': False,
+    'responsive_web_graphql_skip_user_profile_image_extensions_enabled': False,
+    'responsive_web_graphql_timeline_navigation_enabled': True
+}
+
+NOTE_TWEET_FEATURES = {
+    'communities_web_enable_tweet_community_results_fetch': True,
+    'c9s_tweet_anatomy_moderator_badge_enabled': True,
+    'tweetypie_unmention_optimization_enabled': True,
+    'responsive_web_edit_tweet_api_enabled': True,
+    'graphql_is_translatable_rweb_tweet_is_translatable_enabled': True,
+    'view_counts_everywhere_api_enabled': True,
+    'longform_notetweets_consumption_enabled': True,
+    'responsive_web_twitter_article_tweet_consumption_enabled': True,
+    'tweet_awards_web_tipping_enabled': False,
+    'creator_subscriptions_quote_tweet_preview_enabled': False,
+    'longform_notetweets_rich_text_read_enabled': True,
+    'longform_notetweets_inline_media_enabled': True,
+    'articles_preview_enabled': False,
+    'rweb_video_timestamps_enabled': True,
+    'rweb_tipjar_consumption_enabled': True,
+    'responsive_web_graphql_exclude_directive_enabled': True,
+    'verified_phone_label_enabled': False,
+    'freedom_of_speech_not_reach_fetch_enabled': True,
+    'standardized_nudges_misinfo': True,
+    'tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled': True,
+    'tweet_with_visibility_results_prefer_gql_media_interstitial_enabled': True,
+    'responsive_web_graphql_skip_user_profile_image_extensions_enabled': False,
+    'responsive_web_graphql_timeline_navigation_enabled': True,
+    'responsive_web_enhance_cards_enabled': False
+}
+
+SIMILAR_POSTS_FEATURES = {
+    'rweb_tipjar_consumption_enabled': True,
+    'responsive_web_graphql_exclude_directive_enabled': True,
+    'verified_phone_label_enabled': False,
+    'creator_subscriptions_tweet_preview_api_enabled': True,
+    'responsive_web_graphql_timeline_navigation_enabled': True,
+    'responsive_web_graphql_skip_user_profile_image_extensions_enabled': False,
+    'communities_web_enable_tweet_community_results_fetch': True,
+    'c9s_tweet_anatomy_moderator_badge_enabled': True,
+    'articles_preview_enabled': False,
+    'tweetypie_unmention_optimization_enabled': True,
+    'responsive_web_edit_tweet_api_enabled': True,
+    'graphql_is_translatable_rweb_tweet_is_translatable_enabled': True,
+    'view_counts_everywhere_api_enabled': True,
+    'longform_notetweets_consumption_enabled': True,
+    'responsive_web_twitter_article_tweet_consumption_enabled': True,
+    'tweet_awards_web_tipping_enabled': False,
+    'creator_subscriptions_quote_tweet_preview_enabled': False,
+    'freedom_of_speech_not_reach_fetch_enabled': True,
+    'standardized_nudges_misinfo': True,
+    'tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled': True,
+    'tweet_with_visibility_results_prefer_gql_media_interstitial_enabled': True,
+    'rweb_video_timestamps_enabled': True,
+    'longform_notetweets_rich_text_read_enabled': True,
+    'longform_notetweets_inline_media_enabled': True,
+    'responsive_web_enhance_cards_enabled': False
+}
+
+BOOKMARK_FOLDER_TIMELINE_FEATURES = {
+    'rweb_tipjar_consumption_enabled': True,
+    'responsive_web_graphql_exclude_directive_enabled': True,
+    'verified_phone_label_enabled': False,
+    'creator_subscriptions_tweet_preview_api_enabled': True,
+    'responsive_web_graphql_timeline_navigation_enabled': True,
+    'responsive_web_graphql_skip_user_profile_image_extensions_enabled': False,
+    'communities_web_enable_tweet_community_results_fetch': True,
+    'c9s_tweet_anatomy_moderator_badge_enabled': True,
+    'articles_preview_enabled': False,
+    'tweetypie_unmention_optimization_enabled': True,
+    'responsive_web_edit_tweet_api_enabled': True,
+    'graphql_is_translatable_rweb_tweet_is_translatable_enabled': True,
+    'view_counts_everywhere_api_enabled': True,
+    'longform_notetweets_consumption_enabled': True,
+    'responsive_web_twitter_article_tweet_consumption_enabled': True,
+    'tweet_awards_web_tipping_enabled': False,
+    'creator_subscriptions_quote_tweet_preview_enabled': False,
+    'freedom_of_speech_not_reach_fetch_enabled': True,
+    'standardized_nudges_misinfo': True,
+    'tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled': True,
+    'tweet_with_visibility_results_prefer_gql_media_interstitial_enabled': True,
+    'rweb_video_timestamps_enabled': True,
+    'longform_notetweets_rich_text_read_enabled': True,
+    'longform_notetweets_inline_media_enabled': True,
+    'responsive_web_enhance_cards_enabled': False
+}
+
 
 class Endpoint:
     """
     A class containing Twitter API endpoints.
     """
-    ALL = 'https://twitter.com/i/api/2/notifications/all.json'
-    TASK = 'https://api.twitter.com/1.1/onboarding/task.json'
+    LOGIN_FLOW = 'https://api.twitter.com/1.1/onboarding/task.json'
     LOGOUT = 'https://api.twitter.com/1.1/account/logout.json'
     CREATE_TWEET = 'https://twitter.com/i/api/graphql/SiM_cAu83R0wnrpmKQQSEw/CreateTweet'
+    CREATE_NOTE_TWEET = 'https://twitter.com/i/api/graphql/iCUB42lIfXf9qPKctjE5rQ/CreateNoteTweet'
     DELETE_TWEET = 'https://twitter.com/i/api/graphql/VaenaVgh5q5ih7kvyVjgtg/DeleteTweet'
-    SEARCH_TIMELINE = 'https://twitter.com/i/api/graphql/HgiQ8U_E6g-HE_I6Pp_2UA/SearchTimeline'
+    SEARCH_TIMELINE = 'https://twitter.com/i/api/graphql/flaR-PUMshxFWZWPNpq4zA/SearchTimeline'
     UPLOAD_MEDIA = 'https://upload.twitter.com/i/media/upload.json'
+    UPLOAD_MEDIA_2 = 'https://upload.twitter.com/i/media/upload2.json'
+    CREATE_MEDIA_METADATA = 'https://api.twitter.com/1.1/media/metadata/create.json'
     GUEST_TOKEN = 'https://api.twitter.com/1.1/guest/activate.json'
     CREATE_CARD = 'https://caps.twitter.com/v2/cards/create.json'
     USER_BY_SCREEN_NAME = 'https://twitter.com/i/api/graphql/NimuplG1OB7Fd2btCLdBOw/UserByScreenName'
@@ -79,6 +215,7 @@ class Endpoint:
     USER_TWEETS_AND_REPLIES = 'https://twitter.com/i/api/graphql/vMkJyzx1wdmvOeeNG0n6Wg/UserTweetsAndReplies'
     USER_MEDIA = 'https://twitter.com/i/api/graphql/2tLOJWwGuCTytDrGBg8VwQ/UserMedia'
     USER_LIKES = 'https://twitter.com/i/api/graphql/IohM3gxQHfvWePH5E3KuNA/Likes'
+    USER_LIKES_2 = 'https://api.x.com/1.1/favorites/list.json'
     TWEET_DETAIL = 'https://twitter.com/i/api/graphql/U0HTv-bAWTBYylwEMT7x5A/TweetDetail'
     TREND = 'https://twitter.com/i/api/2/guide.json'
     FAVORITE_TWEET = 'https://twitter.com/i/api/graphql/lI07N6Otwv1PhnEgXILM7A/FavoriteTweet'
@@ -92,14 +229,19 @@ class Endpoint:
     HOME_TIMELINE = 'https://twitter.com/i/api/graphql/-X_hcgQzmHGl29-UXxz4sw/HomeTimeline'
     HOME_LATEST_TIMELINE = 'https://twitter.com/i/api/graphql/U0cdisy7QFIoTfu3-Okw0A/HomeLatestTimeline'
     FOLLOWERS = 'https://twitter.com/i/api/graphql/gC_lyAxZOptAMLCJX5UhWw/Followers'
+    FOLLOWERS2 = 'https://api.twitter.com/1.1/followers/list.json'
+    FOLLOWERS_IDS = 'https://api.twitter.com/1.1/followers/ids.json'
+    FRIENDS_IDS = 'https://api.twitter.com/1.1/friends/ids.json'
+    INCOMING_FRIENDSHIPS = 'https://api.twitter.com/1.1/friendships/incoming.json'
     BLUE_VERIFIED_FOLLOWERS = 'https://twitter.com/i/api/graphql/VmIlPJNEDVQ29HfzIhV4mw/BlueVerifiedFollowers'
     FOLLOWING = 'https://twitter.com/i/api/graphql/2vUj-_Ek-UmBVDNtd8OnQA/Following'
+    FOLLOWING2 = 'https://api.twitter.com/1.1/friends/list.json'
     FOLLOWERS_YOU_KNOW = 'https://twitter.com/i/api/graphql/f2tbuGNjfOE8mNUO5itMew/FollowersYouKnow'
     SUBSCRIPTIONS = 'https://twitter.com/i/api/graphql/Wsm5ZTCYtg2eH7mXAXPIgw/UserCreatorSubscriptions'
     SEND_DM = 'https://twitter.com/i/api/1.1/dm/new2.json'
     DELETE_DM = 'https://twitter.com/i/api/graphql/BJ6DtxA2llfjnRoRjaiIiw/DMMessageDeleteMutation'
     INBOX_INITIAL_STATE = 'https://twitter.com/i/api/1.1/dm/inbox_initial_state.json'
-    CONVERSASION = 'https://twitter.com/i/api/1.1/dm/conversation/{}.json'
+    CONVERSATION = 'https://twitter.com/i/api/1.1/dm/conversation/{}.json'
     CREATE_SCHEDULED_TWEET = 'https://twitter.com/i/api/graphql/LCVzRQGxOaGnOnYH01NQXg/CreateScheduledTweet'
     BOOKMARKS = 'https://twitter.com/i/api/graphql/qToeLeMs43Q8cr7tRYXmaQ/Bookmarks'
     BOOKMARKS_ALL_DELETE = 'https://twitter.com/i/api/graphql/skiACZKC1GDYli-M8RzEPQ/BookmarksAllDelete'
@@ -129,32 +271,74 @@ class Endpoint:
     DELETE_SCHEDULED_TWEET = 'https://twitter.com/i/api/graphql/CTOVqej0JBXAZSwkp1US0g/DeleteScheduledTweet'
     SETTINGS = 'https://api.twitter.com/1.1/account/settings.json'
     LIST_MANAGEMENT = 'https://twitter.com/i/api/graphql/47170qwZCt5aFo9cBwFoNA/ListsManagementPageTimeline'
+    NOTIFICATIONS_ALL = 'https://twitter.com/i/api/2/notifications/all.json'
+    NOTIFICATIONS_VERIFIED = 'https://twitter.com/i/api/2/notifications/verified.json'
+    NOTIFICATIONS_MENTIONES = 'https://twitter.com/i/api/2/notifications/mentions.json'
+    VOTE = 'https://caps.twitter.com/v2/capi/passthrough/1'
+    REPORT_FLOW = 'https://twitter.com/i/api/1.1/report/flow.json'
+    FETCH_COMMUNITY_NOTE = 'https://twitter.com/i/api/graphql/fKWPPj271aTM-AB9Xp48IA/BirdwatchFetchOneNote'
+    SEARCH_COMMUNITY = 'https://twitter.com/i/api/graphql/daVUkhfHn7-Z8llpYVKJSw/CommunitiesSearchQuery'
+    GET_COMMUNITY = 'https://twitter.com/i/api/graphql/lUBKrilodgg9Nikaw3cIiA/CommunityQuery'
+    COMMUNITY_TWEETS = 'https://twitter.com/i/api/graphql/mhwSsmub4JZgHcs0dtsjrw/CommunityTweetsTimeline'
+    COMMUNITY_MEDIA = 'https://twitter.com/i/api/graphql/Ht5K2ckaZYAOuRFmFfbHig/CommunityMediaTimeline'
+    COMMUNITIES_TIMELINE = 'https://twitter.com/i/api/graphql/4-4iuIdaLPpmxKnA3mr2LA/CommunitiesMainPageTimeline'
+    JOIN_COMMUNITY = 'https://twitter.com/i/api/graphql/xZQLbDwbI585YTG0QIpokw/JoinCommunity'
+    REQUEST_TO_JOIN_COMMUNITY = 'https://twitter.com/i/api/graphql/XwWChphD_6g7JnsFus2f2Q/RequestToJoinCommunity'
+    LEAVE_COMMUNITY = 'https://twitter.com/i/api/graphql/OoS6Kd4-noNLXPZYHtygeA/LeaveCommunity'
+    COMMUNITY_MEMBERS = 'https://twitter.com/i/api/graphql/KDAssJ5lafCy-asH4wm1dw/membersSliceTimeline_Query'
+    COMMUNITY_MODERATORS = 'https://twitter.com/i/api/graphql/9KI_r8e-tgp3--N5SZYVjg/moderatorsSliceTimeline_Query'
+    SEARCH_COMMUNITY_TWEET = 'https://twitter.com/i/api/graphql/5341rmzzvdjqfmPKfoHUBw/CommunityTweetSearchModuleQuery'
+    SIMILAR_POSTS = 'https://twitter.com/i/api/graphql/EToazR74i0rJyZYalfVEAQ/SimilarPosts'
+    BOOKMARK_FOLDERS = 'https://twitter.com/i/api/graphql/i78YDd0Tza-dV4SYs58kRg/BookmarkFoldersSlice'
+    EDIT_BOOKMARK_FOLDER = 'https://twitter.com/i/api/graphql/a6kPp1cS1Dgbsjhapz1PNw/EditBookmarkFolder'
+    DELETE_BOOKMARK_FOLDER = 'https://twitter.com/i/api/graphql/2UTTsO-6zs93XqlEUZPsSg/DeleteBookmarkFolder'
+    CREATE_BOOKMARK_FOLDER = 'https://twitter.com/i/api/graphql/6Xxqpq8TM_CREYiuof_h5w/createBookmarkFolder'
+    BOOKMARK_FOLDER_TIMELINE = 'https://twitter.com/i/api/graphql/8HoabOvl7jl9IC1Aixj-vg/BookmarkFolderTimeline'
+    BOOKMARK_TO_FOLDER = 'https://twitter.com/i/api/graphql/4KHZvvNbHNf07bsgnL9gWA/bookmarkTweetToFolder'
+    PLACE_TRENDS = 'https://api.twitter.com/1.1/trends/place.json'
+    AVAILABLE_LOCATIONS = 'https://api.twitter.com/1.1/trends/available.json'
+    EVENTS = 'https://api.twitter.com/live_pipeline/events'
+    UPDATE_SUBSCRIPTIONS = 'https://api.twitter.com/1.1/live_pipeline/update_subscriptions'
+    REVERSE_GEOCODE = 'https://api.twitter.com/1.1/geo/reverse_geocode.json'
+    SEARCH_GEO = 'https://api.twitter.com/1.1/geo/search.json'
+    PLACE_BY_ID = 'https://api.twitter.com/1.1/geo/id/{}.json'
+    USER_STATE = 'https://api.twitter.com/help-center/forms/api/prod/user_state.json'
 
 T = TypeVar('T')
 
 
 class Result(Generic[T]):
     """
-    This class is designed to store multiple results.
+    This class is for storing multiple results.
     The `next` method can be used to retrieve further results.
     As with a regular list, you can access elements by
     specifying indexes and iterate over elements using a for loop.
 
     Attributes
     ----------
-    token : str
-        Token used to obtain the next result.
+    next_cursor : :class:`str`
+        Cursor used to obtain the next result.
+    previous_cursor : :class:`str`
+        Cursor used to obtain the previous result.
+    token : :class:`str`
+        Alias of `next_cursor`.
+    cursor : :class:`str`
+        Alias of `next_cursor`.
     """
 
     def __init__(
         self,
         results: list[T],
         fetch_next_result: Callable | None = None,
-        token: str | None = None
+        next_cursor: str | None = None,
+        fetch_previous_result: Callable | None = None,
+        previous_cursor: str | None = None
     ) -> None:
         self.__results = results
-        self.token = token
+        self.next_cursor = next_cursor
         self.__fetch_next_result = fetch_next_result
+        self.previous_cursor = previous_cursor
+        self.__fetch_previous_result = fetch_previous_result
 
     def next(self) -> Result[T]:
         """
@@ -163,6 +347,26 @@ class Result(Generic[T]):
         if self.__fetch_next_result is None:
             return Result([])
         return self.__fetch_next_result()
+
+    def previous(self) -> Result[T]:
+        """
+        The previous result.
+        """
+        if self.__fetch_previous_result is None:
+            return Result([])
+        return self.__fetch_previous_result()
+
+    @property
+    def cursor(self) -> str:
+        """Alias of `next_token`
+        """
+        return self.next_cursor
+
+    @property
+    def token(self) -> str:
+        """Alias of `next_token`
+        """
+        return self.next_cursor
 
     def __iter__(self) -> Iterator[T]:
         yield from self.__results
@@ -177,7 +381,45 @@ class Result(Generic[T]):
         return self.__results.__repr__()
 
 
-def find_dict(obj: list | dict, key: str | int) -> list[Any]:
+class Flow:
+    def __init__(self, client: Client, endpoint: str, headers: dict) -> None:
+        self._client = client
+        self.endpoint = endpoint
+        self.headers = headers
+        self.response = None
+
+    def execute_task(self, *subtask_inputs, **kwargs) -> None:
+        data = {}
+
+        if self.token is not None:
+            data['flow_token'] = self.token
+        if subtask_inputs is not None:
+            data['subtask_inputs'] = list(subtask_inputs)
+
+        response, _ = self._client.post(
+            self.endpoint,
+            data=json.dumps(data),
+            headers=self.headers,
+            **kwargs
+        )
+        self.response = response
+
+    @property
+    def token(self) -> str | None:
+        if self.response is None:
+            return None
+        return self.response.get('flow_token')
+
+    @property
+    def task_id(self) -> str | None:
+        if self.response is None:
+            return None
+        return self.response['subtasks'][0]['subtask_id']
+
+
+def find_dict(
+    obj: list | dict, key: str | int, find_one: bool = False
+) -> list[Any]:
     """
     Retrieves elements from a nested dictionary.
     """
@@ -185,9 +427,14 @@ def find_dict(obj: list | dict, key: str | int) -> list[Any]:
     if isinstance(obj, dict):
         if key in obj:
             results.append(obj.get(key))
+            if find_one:
+                return results
     if isinstance(obj, (list, dict)):
         for elem in (obj if isinstance(obj, list) else obj.values()):
-            results += find_dict(elem, key)
+            r = find_dict(elem, key, find_one)
+            results += r
+            if r and find_one:
+                return results
     return results
 
 
@@ -210,6 +457,88 @@ def urlencode(data: dict[str, Any]) -> str:
     data_encoded = parse.urlencode(data)
     # replace single quote to double quote.
     return data_encoded.replace('%27', '%22')
+
+
+def timestamp_to_datetime(timestamp: str) -> datetime:
+    return datetime.strptime(timestamp, '%a %b %d %H:%M:%S %z %Y')
+
+
+def build_tweet_data(raw_data: dict) -> dict:
+    return {
+        **raw_data,
+        'rest_id': raw_data['id'],
+        'is_translatable': None,
+        'views': {},
+        'edit_control': {},
+        'legacy': {
+            'created_at': raw_data.get('created_at'),
+            'full_text': raw_data.get('full_text') or raw_data.get('text'),
+            'lang': raw_data.get('lang'),
+            'is_quote_status': raw_data.get('is_quote_status'),
+            'in_reply_to_status_id_str': raw_data.get('in_reply_to_status_id_str'),
+            'retweeted_status_result': raw_data.get('retweeted_status_result'),
+            'possibly_sensitive': raw_data.get('possibly_sensitive'),
+            'possibly_sensitive_editable': raw_data.get('possibly_sensitive_editable'),
+            'quote_count': raw_data.get('quote_count'),
+            'entities': raw_data.get('entities'),
+            'reply_count': raw_data.get('reply_count'),
+            'favorite_count': raw_data.get('favorite_count'),
+            'favorited': raw_data.get('favorited'),
+            'retweet_count': raw_data.get('retweet_count')
+        }
+    }
+
+
+def build_user_data(raw_data: dict) -> dict:
+    return {
+        **raw_data,
+        'rest_id': raw_data['id'],
+        'is_blue_verified': raw_data.get('ext_is_blue_verified'),
+        'legacy': {
+            'created_at': raw_data.get('created_at'),
+            'name': raw_data.get('name'),
+            'screen_name': raw_data.get('screen_name'),
+            'profile_image_url_https': raw_data.get('profile_image_url_https'),
+            'location': raw_data.get('location'),
+            'description': raw_data.get('description'),
+            'entities': raw_data.get('entities'),
+            'pinned_tweet_ids_str': raw_data.get('pinned_tweet_ids_str'),
+            'verified': raw_data.get('verified'),
+            'possibly_sensitive': raw_data.get('possibly_sensitive'),
+            'can_dm': raw_data.get('can_dm'),
+            'can_media_tag': raw_data.get('can_media_tag'),
+            'want_retweets': raw_data.get('want_retweets'),
+            'default_profile': raw_data.get('default_profile'),
+            'default_profile_image': raw_data.get('default_profile_image'),
+            'has_custom_timelines': raw_data.get('has_custom_timelines'),
+            'followers_count': raw_data.get('followers_count'),
+            'fast_followers_count': raw_data.get('fast_followers_count'),
+            'normal_followers_count': raw_data.get('normal_followers_count'),
+            'friends_count': raw_data.get('friends_count'),
+            'favourites_count': raw_data.get('favourites_count'),
+            'listed_count': raw_data.get('listed_count'),
+            'media_count': raw_data.get('media_count'),
+            'statuses_count': raw_data.get('statuses_count'),
+            'is_translator': raw_data.get('is_translator'),
+            'translator_type': raw_data.get('translator_type'),
+            'withheld_in_countries': raw_data.get('withheld_in_countries'),
+            'url': raw_data.get('url'),
+            'profile_banner_url': raw_data.get('profile_banner_url')
+        }
+    }
+
+
+def flatten_params(params: dict) -> dict:
+    flattened_params = {}
+    for key, value in params.items():
+        if isinstance(value, (list, dict)):
+            value = json.dumps(value)
+        flattened_params[key] = value
+    return flattened_params
+
+
+def b64_to_str(b64: str) -> str:
+    return base64.b64decode(b64).decode()
 
 
 FILTERS = Literal[
@@ -347,13 +676,13 @@ def build_query(text: str, options: SearchOptions) -> str:
     if until := options.get('until'):
         text += f' until:{until}'
 
-    if options.get('positive') == True:
-        text += f' :)'
+    if options.get('positive') is True:
+        text += ' :)'
 
-    if options.get('negative') == True:
-        text += f' :('
+    if options.get('negative') is True:
+        text += ' :('
 
-    if options.get('question') == True:
-        text += f' ?'
+    if options.get('question') is True:
+        text += ' ?'
 
     return text
